@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat about Luke Skywalker</title>
+    <title>Chat With Website</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
         /* CSS styles */
@@ -31,7 +31,7 @@
         }
 
         #initiateChatButton {
-            padding: 12px 20px;
+            padding: 0px 30px;
             border: none;
             border-radius: 6px;
             background-color: #5a9cff;
@@ -39,10 +39,27 @@
             cursor: pointer;
             font-size: 14px;
             transition: background-color 0.3s ease;
+            position: relative;
         }
 
         #initiateChatButton:hover {
             background-color: #4f8ae3;
+        }
+
+        #initiateChatIcon,
+        #initiateChatLoading {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            display: inline-block;
+        }
+
+        #initiateChatIcon {
+            margin-right: 5px;
+        }
+
+        #initiateChatLoading {
+            display: none;
         }
 
         #chatContainer {
@@ -215,7 +232,16 @@
 <body>
     <div id="websiteInputContainer">
         <input type="text" id="websiteInput" placeholder="Enter website URL...">
-        <button id="initiateChatButton" onclick="initiateChat()"><i class="fas fa-play"></i> Initiate Chat</button>
+        <button id="initiateChatButton" onclick="initiateChat()" style="position: relative;">
+            <div style="display: flex; align-items: center;">
+                <i id="initiateChatIcon" class="fas fa-play" style="margin-right: 100px;"></i>
+                <p style="padding-left: 30px;">Initiate Chat</p>
+            </div>
+            <div id="initiateChatLoading" style="display: none; position: absolute; top: 50%; transform: translateY(-50%); margin-left: 60px;">
+                <i class="fas fa-spinner fa-spin"></i>
+            </div>
+        </button>
+        
     </div>
 
     <div id="chatContainer" style="display: none;">
@@ -223,7 +249,7 @@
     </div>
     <div id="inputContainer" style="display: none;">
         <input type="text" id="questionInput" placeholder="Type your question...">
-        <button id="sendButton" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+        <button id="sendButton"  onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
         <div id="loadingIndicator"></div> <!-- Loading spinner beside the send button -->
     </div>
 
@@ -232,6 +258,14 @@
         async function initiateChat() {
             const websiteURL = document.getElementById('websiteInput').value.trim();
             if (!websiteURL) return; // Do not initiate chat without website URL
+
+            const initiateChatButton = document.getElementById('initiateChatButton');
+            const initiateChatIcon = document.getElementById('initiateChatIcon');
+            const initiateChatLoading = document.getElementById('initiateChatLoading');
+            
+            // Show loading spinner
+            initiateChatIcon.style.display = 'none';
+            initiateChatLoading.style.display = 'inline-block';
 
             try {
                 const response = await fetch('http://localhost:8000/initiate_chat', {
@@ -252,6 +286,10 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
+            } finally {
+                // Hide loading spinner
+                initiateChatIcon.style.display = 'inline-block';
+                initiateChatLoading.style.display = 'none';
             }
         }
 
