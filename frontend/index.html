@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat about Luke Skywalker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        /* CSS styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #chatContainer {
+            max-width: 600px;
+            width: 100%;
+            background-color: #fff;
+            border-radius: 8px;
+            overflow-y: auto; /* Enable vertical scrollbar */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .messageContainer {
+            padding: 20px;
+            display: flex;
+            align-items: flex-start;
+            animation: slideIn 0.5s ease-in-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .userMessageContainer {
+            justify-content: flex-end;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 12px;
+            border-radius: 10px;
+            background-color: #f0f0f0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            animation: fadeInMessage 0.3s ease;
+        }
+
+        @keyframes fadeInMessage {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .userMessage {
+            background-color: #5a9cff;
+            color: #fff;
+            animation: slideInUserMessage 0.5s ease;
+        }
+
+        @keyframes slideInUserMessage {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .botMessage {
+            background-color: #4caf50;
+            color: #fff;
+            animation: slideInBotMessage 0.5s ease;
+        }
+
+        @keyframes slideInBotMessage {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .message p {
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        #inputContainer {
+            background-color: #fff;
+            padding: 15px;
+            border-top: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            border-radius: 10px;
+            margin-left: 10px;
+        }
+
+        #questionInput {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            background-color: #f0f0f0;
+            font-size: 14px;
+            margin-right: 10px;
+            outline: none;
+            transition: background-color 0.3s ease;
+        }
+
+        #questionInput:focus {
+            background-color: #e0e0e0;
+        }
+
+        #sendButton {
+            padding: 12px;
+            border: none;
+            border-radius: 50%;
+            background-color: #5a9cff;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #sendButton:hover {
+            background-color: #4f8ae3;
+        }
+
+        #loadingIndicator {
+            width: 20px;
+            height: 20px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-top-color: #4caf50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+            display: none;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="chatContainer">
+        <!-- Message area -->
+    </div>
+    <div id="inputContainer">
+        <input type="text" id="questionInput" placeholder="Type your question...">
+        <button id="sendButton" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+        <div id="loadingIndicator"></div> <!-- Loading spinner beside the send button -->
+    </div>
+
+    <script>
+        // Function to send message
+        async function sendMessage() {
+            const question = document.getElementById('questionInput').value.trim();
+            if (!question) return; // Do not send empty messages
+
+            const chatContainer = document.getElementById('chatContainer');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            
+            // Show loading spinner
+            loadingIndicator.style.display = 'block';
+
+            try {
+                // User message
+                const userMessageContainer = document.createElement('div');
+                userMessageContainer.classList.add('messageContainer', 'userMessageContainer');
+                const userMessage = document.createElement('div');
+                userMessage.classList.add('message', 'userMessage');
+                userMessage.innerHTML = `<p>${question}</p>`;
+                userMessageContainer.appendChild(userMessage);
+                chatContainer.appendChild(userMessageContainer);
+
+                // Scroll to bottom
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+
+                // Bot message
+                const response = await fetch('http://localhost:8000/chat/response', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question })
+                });
+                
+                const data = await response.json();
+                const botMessageContainer = document.createElement('div');
+                botMessageContainer.classList.add('messageContainer');
+                const botMessage = document.createElement('div');
+                botMessage.classList.add('message', 'botMessage');
+                botMessage.innerHTML = `<p>${data.response}</p>`;
+                botMessageContainer.appendChild(botMessage);
+                chatContainer.appendChild(botMessageContainer);
+
+                // Scroll to bottom
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            } catch (error) {
+                console.error('Error:', error);
+                // Error message
+                const errorMessageContainer = document.createElement('div');
+                errorMessageContainer.classList.add('messageContainer');
+                const errorMessage = document.createElement('div');
+                errorMessage.classList.add('message', 'botMessage');
+                errorMessage.innerHTML = `<p>Error: ${error}</p>`;
+                errorMessageContainer.appendChild(errorMessage);
+                chatContainer.appendChild(errorMessageContainer);
+
+                // Scroll to bottom
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            } finally {
+                // Hide loading spinner
+                loadingIndicator.style.display = 'none';
+            }
+
+            // Clear input field after sending message
+            document.getElementById('questionInput').value = '';
+        }
+
+        // Function to handle keydown event on input field
+        document.getElementById('questionInput').addEventListener('keydown', function(event) {
+            if (event.keyCode === 13) { // Check if Enter key is pressed
+                sendMessage(); // Call sendMessage function
+            }
+        });
+    </script>
+</body>
+</html>
+
