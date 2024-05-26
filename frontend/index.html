@@ -18,6 +18,33 @@
             height: 100vh;
         }
 
+        #websiteInputContainer {
+            margin-bottom: 20px;
+        }
+
+        #websiteInput {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+
+        #initiateChatButton {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            background-color: #5a9cff;
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        #initiateChatButton:hover {
+            background-color: #4f8ae3;
+        }
+
         #chatContainer {
             max-width: 600px;
             width: 100%;
@@ -26,6 +53,7 @@
             overflow-y: auto; /* Enable vertical scrollbar */
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             animation: fadeIn 0.5s ease-in-out;
+            display: none;
         }
 
         @keyframes fadeIn {
@@ -185,16 +213,48 @@
     </style>
 </head>
 <body>
-    <div id="chatContainer">
+    <div id="websiteInputContainer">
+        <input type="text" id="websiteInput" placeholder="Enter website URL...">
+        <button id="initiateChatButton" onclick="initiateChat()"><i class="fas fa-play"></i> Initiate Chat</button>
+    </div>
+
+    <div id="chatContainer" style="display: none;">
         <!-- Message area -->
     </div>
-    <div id="inputContainer">
+    <div id="inputContainer" style="display: none;">
         <input type="text" id="questionInput" placeholder="Type your question...">
         <button id="sendButton" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
         <div id="loadingIndicator"></div> <!-- Loading spinner beside the send button -->
     </div>
 
     <script>
+        // Function to initiate chat
+        async function initiateChat() {
+            const websiteURL = document.getElementById('websiteInput').value.trim();
+            if (!websiteURL) return; // Do not initiate chat without website URL
+
+            try {
+                const response = await fetch('http://localhost:8000/initiate_chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ website_url: websiteURL })
+                });
+
+                if (response.ok) {
+                    // Show chat interface
+                    document.getElementById('websiteInputContainer').style.display = 'none';
+                    document.getElementById('chatContainer').style.display = 'block';
+                    document.getElementById('inputContainer').style.display = 'flex';
+                } else {
+                    console.error('Failed to initiate chat');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
         // Function to send message
         async function sendMessage() {
             const question = document.getElementById('questionInput').value.trim();
